@@ -46,10 +46,11 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
   int _counter = 0;
-  final double _width = 800;
-  final double _height = 800;
+
+  AnimationController controller;
+  Animation sizeAnimation;
 
   void _incrementCounter() {
     setState(() {
@@ -61,6 +62,31 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
+
+    @override
+    void initState() {
+      super.initState();
+
+      // Defining controller with animation duration of two seconds
+      controller =  AnimationController(vsync: this, duration: Duration(seconds: 2));
+
+      // Defining both color and size animations
+      sizeAnimation = Tween<double>(begin: 100.0, end: 200.0).animate(controller);
+
+      // Rebuilding the screen when animation goes ahead
+      controller.addListener(() {
+	setState(() {});
+      });
+
+      // Repeat the animation after finish
+      controller.repeat();
+
+      //For single time
+      //controller.forward()
+
+      //Reverses the animation instead of starting it again and repeats
+      //controller.repeat(reverse: true);
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -94,19 +120,28 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
-          // mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-	    Column(
-		mainAxisAlignment: MainAxisAlignment.center,
-		children: <Widget>[
-		  Text(
-		      'Counter: $_counter',
-		      style: Theme.of(context).textTheme.headline4,
-		  ),
-		]
-	    ),
-	    _buildImageContainer1(),
-          ],
+	    children: <Widget>[
+	      Column(
+		  mainAxisAlignment: MainAxisAlignment.center,
+		  children: <Widget>[
+		    Container(
+			height: sizeAnimation.value,
+			width: sizeAnimation.value,
+			color: Colors.red,
+		    ),
+		    Container(
+			width:400,
+			height:100,
+			alignment: Alignment.center,
+			child: Text(
+			    'Counter: ${sizeAnimation.value.toInt()}',
+			    style: Theme.of(context).textTheme.headline4,
+			),
+		    ),
+		  ]
+	      ),
+	      if (_counter % 2 == 0)  _buildImageContainer(),
+	    ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -126,21 +161,24 @@ class _MyHomePageState extends State<MyHomePage> {
       );
   }
   Widget _buildImageContainer() {
-    return Container(
-      // width: _width,
-      // height: _height,
-      // decoration: BoxDecoration(
-      //   image: DecorationImage(
-      //     image: AssetImage('assets/images/background1.jpg'),
-      //     fit: BoxFit.cover,
-      //   ),
-      // ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-        child: Container(
-          color: Colors.red.withOpacity(0.0),
-        ),
-      ),
+    return Positioned(top:0, bottom: 0, left:0 ,right:0,
+	child: ClipRect(
+	    child: BackdropFilter(
+		filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+		child: Container(
+		    // color: Colors.black.withOpacity(0.1),
+		    color: Colors.black.withOpacity( (_counter/2)%2==0 ? 0.0 : 0.1),
+		),
+	    )
+	)
     );
+    // return Container(
+    //   child: BackdropFilter(
+    //     filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+    //     child: Container(
+    //       color: Colors.red.withOpacity(0.0),
+    //     ),
+    //   ),
+    // );
   }
 }
